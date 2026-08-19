@@ -1,6 +1,3 @@
-
-
-Readme · MD
 Little Map — Simple Distance Tracker
 A lightweight Android app that captures two GPS location points — a start and an end — and calculates the straight-line distance walked between them.
 
