@@ -19,9 +19,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private val LOCATION_PERMISSION_REQUEST_CODE = 1001
 
-    // TEMP — M3's part, delete this block once M3 pushes their real version
     private var startLocation: Location? = null
-    // Your part
     private var endLocation: Location? = null
 
     private lateinit var btnStart: Button
@@ -77,29 +75,31 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    // ---- TEMP: M3's part (delete when M3 pushes their real version) ----
     private fun fetchStartLocation() {
         val request = CurrentLocationRequest.Builder()
             .setPriority(Priority.PRIORITY_HIGH_ACCURACY)
             .build()
 
-        fusedLocationClient.getCurrentLocation(request, null)
-            .addOnSuccessListener { location: Location? ->
-                if (location != null) {
-                    startLocation = location
-                    tvStart.text = "Start Location:\nLatitude: %.5f\nLongitude: %.5f"
-                        .format(location.latitude, location.longitude)
-                    btnEnd.isEnabled = true
-                } else {
-                    Toast.makeText(this, "Couldn't get a location fix. Try again.", Toast.LENGTH_SHORT).show()
+        try {
+            fusedLocationClient.getCurrentLocation(request, null)
+                .addOnSuccessListener { location: Location? ->
+                    if (location != null) {
+                        startLocation = location
+                        tvStart.text = "Start Location:\nLatitude: %.5f\nLongitude: %.5f"
+                            .format(location.latitude, location.longitude)
+                        btnEnd.isEnabled = true
+                    } else {
+                        Toast.makeText(this, "Couldn't get a location fix. Try again.", Toast.LENGTH_SHORT).show()
+                    }
                 }
-            }
-            .addOnFailureListener {
-                Toast.makeText(this, "Failed to get start location", Toast.LENGTH_SHORT).show()
-            }
+                .addOnFailureListener {
+                    Toast.makeText(this, "Failed to get start location", Toast.LENGTH_SHORT).show()
+                }
+        } catch (e: SecurityException) {
+            Toast.makeText(this, "Location permission was revoked", Toast.LENGTH_SHORT).show()
+        }
     }
 
-    // ---- Your part: End Point + Distance ----
     private fun fetchEndLocation() {
         val start = startLocation
         if (start == null) {
@@ -111,25 +111,29 @@ class MainActivity : AppCompatActivity() {
             .setPriority(Priority.PRIORITY_HIGH_ACCURACY)
             .build()
 
-        fusedLocationClient.getCurrentLocation(request, null)
-            .addOnSuccessListener { location: Location? ->
-                if (location != null) {
-                    endLocation = location
-                    tvEnd.text = "End Location:\nLatitude: %.5f\nLongitude: %.5f"
-                        .format(location.latitude, location.longitude)
+        try {
+            fusedLocationClient.getCurrentLocation(request, null)
+                .addOnSuccessListener { location: Location? ->
+                    if (location != null) {
+                        endLocation = location
+                        tvEnd.text = "End Location:\nLatitude: %.5f\nLongitude: %.5f"
+                            .format(location.latitude, location.longitude)
 
-                    val distanceMeters = start.distanceTo(location)
-                    tvDistance.text = if (distanceMeters > 1000) {
-                        "%.2f km".format(distanceMeters / 1000)
+                        val distanceMeters = start.distanceTo(location)
+                        tvDistance.text = if (distanceMeters > 1000) {
+                            "%.2f km".format(distanceMeters / 1000)
+                        } else {
+                            "%.2f meters".format(distanceMeters)
+                        }
                     } else {
-                        "%.2f meters".format(distanceMeters)
+                        Toast.makeText(this, "Couldn't get a location fix. Try again.", Toast.LENGTH_SHORT).show()
                     }
-                } else {
-                    Toast.makeText(this, "Couldn't get a location fix. Try again.", Toast.LENGTH_SHORT).show()
                 }
-            }
-            .addOnFailureListener {
-                Toast.makeText(this, "Failed to get end location", Toast.LENGTH_SHORT).show()
-            }
+                .addOnFailureListener {
+                    Toast.makeText(this, "Failed to get end location", Toast.LENGTH_SHORT).show()
+                }
+        } catch (e: SecurityException) {
+            Toast.makeText(this, "Location permission was revoked", Toast.LENGTH_SHORT).show()
+        }
     }
 }
