@@ -24,6 +24,7 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var btnStart: Button
     private lateinit var btnEnd: Button
+    private lateinit var btnReset: Button
     private lateinit var tvStart: TextView
     private lateinit var tvEnd: TextView
     private lateinit var tvDistance: TextView
@@ -35,6 +36,7 @@ class MainActivity : AppCompatActivity() {
 
         btnStart = findViewById(R.id.btnStart)
         btnEnd = findViewById(R.id.btnEnd)
+        btnReset = findViewById(R.id.btnReset)
         tvStart = findViewById(R.id.tvStart)
         tvEnd = findViewById(R.id.tvEnd)
         tvDistance = findViewById(R.id.tvDistance)
@@ -45,6 +47,10 @@ class MainActivity : AppCompatActivity() {
 
         btnEnd.setOnClickListener {
             if (hasLocationPermission()) fetchEndLocation() else requestLocationPermission()
+        }
+
+        btnReset.setOnClickListener {
+            resetPoints()
         }
     }
 
@@ -135,5 +141,15 @@ class MainActivity : AppCompatActivity() {
         } catch (_: SecurityException) {
             Toast.makeText(this, "Location permission was revoked", Toast.LENGTH_SHORT).show()
         }
+    }
+
+    private fun resetPoints() {
+        startLocation = null
+        endLocation = null
+        tvStart.text = "Start Location: not set"
+        tvEnd.text = "End Location: not set"
+        tvDistance.text = "Distance: -"
+        btnEnd.isEnabled = false
+        Toast.makeText(this, "Points reset", Toast.LENGTH_SHORT).show()
     }
 }

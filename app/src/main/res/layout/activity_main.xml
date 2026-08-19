@@ -76,6 +76,12 @@
             android:gravity="center"
             android:padding="16dp" />
 
+        <Button
+            android:id="@+id/btnReset"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Reset" />
+
     </LinearLayout>
 
 </ScrollView>
