@@ -16,54 +16,36 @@ import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
 
 class MainActivity : AppCompatActivity() {
-
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private val LOCATION_PERMISSION_REQUEST_CODE = 1001
 
-    // Member 3 additions
     private var startLocation: Location? = null
+    private var endLocation: Location? = null
+
     private lateinit var btnStart: Button
     private lateinit var btnEnd: Button
     private lateinit var tvStart: TextView
+    private lateinit var tvEnd: TextView
+    private lateinit var tvDistance: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
-        // bind views (now that activity_main.xml exists from M2)
         btnStart = findViewById(R.id.btnStart)
         btnEnd = findViewById(R.id.btnEnd)
         tvStart = findViewById(R.id.tvStart)
+        tvEnd = findViewById(R.id.tvEnd)
+        tvDistance = findViewById(R.id.tvDistance)
 
         btnStart.setOnClickListener {
-            if (hasLocationPermission()) {
-                fetchStartLocation()
-            } else {
-                requestLocationPermission()
-            }
+            if (hasLocationPermission()) fetchStartLocation() else requestLocationPermission()
         }
-    }
 
-    private fun fetchStartLocation() {
-        val request = CurrentLocationRequest.Builder()
-            .setPriority(Priority.PRIORITY_HIGH_ACCURACY)
-            .build()
-
-        fusedLocationClient.getCurrentLocation(request, null)
-            .addOnSuccessListener { location: Location? ->
-                if (location != null) {
-                    startLocation = location
-                    tvStart.text = "Start: %.5f, %.5f".format(location.latitude, location.longitude)
-                    btnEnd.isEnabled = true
-                } else {
-                    Toast.makeText(this, "Couldn't get a location fix. Try again.", Toast.LENGTH_SHORT).show()
-                }
-            }
-            .addOnFailureListener {
-                Toast.makeText(this, "Failed to get start location", Toast.LENGTH_SHORT).show()
-            }
+        btnEnd.setOnClickListener {
+            if (hasLocationPermission()) fetchEndLocation() else requestLocationPermission()
+        }
     }
 
     private fun hasLocationPermission(): Boolean {
@@ -90,6 +72,68 @@ class MainActivity : AppCompatActivity() {
             } else {
                 Toast.makeText(this, "Location permission is required", Toast.LENGTH_LONG).show()
             }
+        }
+    }
+
+    private fun fetchStartLocation() {
+        val request = CurrentLocationRequest.Builder()
+            .setPriority(Priority.PRIORITY_HIGH_ACCURACY)
+            .build()
+
+        try {
+            fusedLocationClient.getCurrentLocation(request, null)
+                .addOnSuccessListener { location: Location? ->
+                    if (location != null) {
+                        startLocation = location
+                        tvStart.text = "Start Location:\nLatitude: %.5f\nLongitude: %.5f"
+                            .format(location.latitude, location.longitude)
+                        btnEnd.isEnabled = true
+                    } else {
+                        Toast.makeText(this, "Couldn't get a location fix. Try again.", Toast.LENGTH_SHORT).show()
+                    }
+                }
+                .addOnFailureListener {
+                    Toast.makeText(this, "Failed to get start location", Toast.LENGTH_SHORT).show()
+                }
+        } catch (_: SecurityException) {
+            Toast.makeText(this, "Location permission was revoked", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun fetchEndLocation() {
+        val start = startLocation
+        if (start == null) {
+            Toast.makeText(this, "Set start point first", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        val request = CurrentLocationRequest.Builder()
+            .setPriority(Priority.PRIORITY_HIGH_ACCURACY)
+            .build()
+
+        try {
+            fusedLocationClient.getCurrentLocation(request, null)
+                .addOnSuccessListener { location: Location? ->
+                    if (location != null) {
+                        endLocation = location
+                        tvEnd.text = "End Location:\nLatitude: %.5f\nLongitude: %.5f"
+                            .format(location.latitude, location.longitude)
+
+                        val distanceMeters = start.distanceTo(location)
+                        tvDistance.text = if (distanceMeters > 1000) {
+                            "%.2f km".format(distanceMeters / 1000)
+                        } else {
+                            "%.2f meters".format(distanceMeters)
+                        }
+                    } else {
+                        Toast.makeText(this, "Couldn't get a location fix. Try again.", Toast.LENGTH_SHORT).show()
+                    }
+                }
+                .addOnFailureListener {
+                    Toast.makeText(this, "Failed to get end location", Toast.LENGTH_SHORT).show()
+                }
+        } catch (_: SecurityException) {
+            Toast.makeText(this, "Location permission was revoked", Toast.LENGTH_SHORT).show()
         }
     }
 }
