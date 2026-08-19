@@ -1,4 +1,4 @@
-package com.example.distancetracker
+package com.example.littlemap
 
 import android.Manifest
 import android.content.pm.PackageManager
