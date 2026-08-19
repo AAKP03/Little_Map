@@ -95,7 +95,7 @@ class MainActivity : AppCompatActivity() {
                 .addOnFailureListener {
                     Toast.makeText(this, "Failed to get start location", Toast.LENGTH_SHORT).show()
                 }
-        } catch (e: SecurityException) {
+        } catch (_: SecurityException) {
             Toast.makeText(this, "Location permission was revoked", Toast.LENGTH_SHORT).show()
         }
     }
@@ -132,7 +132,7 @@ class MainActivity : AppCompatActivity() {
                 .addOnFailureListener {
                     Toast.makeText(this, "Failed to get end location", Toast.LENGTH_SHORT).show()
                 }
-        } catch (e: SecurityException) {
+        } catch (_: SecurityException) {
             Toast.makeText(this, "Location permission was revoked", Toast.LENGTH_SHORT).show()
         }
     }
