@@ -1,24 +1,69 @@
-package com.example.littlemap
+package com.example.distancetracker
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.location.Location
 import android.os.Bundle
+import android.widget.Button
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import com.google.android.gms.location.CurrentLocationRequest
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.Priority
 
 class MainActivity : AppCompatActivity() {
+
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private val LOCATION_PERMISSION_REQUEST_CODE = 1001
+
+    // Member 3 additions
+    private var startLocation: Location? = null
+    private lateinit var btnStart: Button
+    private lateinit var btnEnd: Button
+    private lateinit var tvStart: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
-        // M2's views get bound here once activity_main.xml exists — see Member 2
+
+        // bind views (now that activity_main.xml exists from M2)
+        btnStart = findViewById(R.id.btnStart)
+        btnEnd = findViewById(R.id.btnEnd)
+        tvStart = findViewById(R.id.tvStart)
+
+        btnStart.setOnClickListener {
+            if (hasLocationPermission()) {
+                fetchStartLocation()
+            } else {
+                requestLocationPermission()
+            }
+        }
+    }
+
+    private fun fetchStartLocation() {
+        val request = CurrentLocationRequest.Builder()
+            .setPriority(Priority.PRIORITY_HIGH_ACCURACY)
+            .build()
+
+        fusedLocationClient.getCurrentLocation(request, null)
+            .addOnSuccessListener { location: Location? ->
+                if (location != null) {
+                    startLocation = location
+                    tvStart.text = "Start: %.5f, %.5f".format(location.latitude, location.longitude)
+                    btnEnd.isEnabled = true
+                } else {
+                    Toast.makeText(this, "Couldn't get a location fix. Try again.", Toast.LENGTH_SHORT).show()
+                }
+            }
+            .addOnFailureListener {
+                Toast.makeText(this, "Failed to get start location", Toast.LENGTH_SHORT).show()
+            }
     }
 
     private fun hasLocationPermission(): Boolean {
